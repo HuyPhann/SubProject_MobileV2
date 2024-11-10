@@ -94,27 +94,20 @@ export default function SearchHomeScreen({
       (!filterByTaxInclusive || item.taxInclusive === false) // Lọc theo trường Tax-inclusive
   );
   const filteredDataWithSearch = (() => {
-    // Check if any search criteria are provided
-    const hasSearchCriteria =
-      (location && location !== "Anywhere") ||
-      (guests && guests !== "Add guests") ||
-      (when && when !== "Anytime");
-
-    // If no search criteria, return original data
-    if (!hasSearchCriteria) {
-      return filteredData; // Return the original data if no search criteria are provided
-    }
-
-    return filteredData.filter(
-      (item) =>
-        // Check condition for location
-        (location === "Anywhere" ||
-          item.location.toLowerCase().includes(location.toLowerCase())) &&
-        // Check condition for number of guests
-        (guests === "Add guests" ||
-          item.totalGuests >= (guests === "Add guests" ? 0 : guests)) &&
-        // Check condition for dates
-        (when === "Anytime" ||
+    return filteredData.filter((item) =>
+      // Check condition for location
+      (location === "Anywhere" ||
+        item.location.toLowerCase().includes(location.toLowerCase())) &&
+      // Check condition for number of guests
+      (guests === "Add guests" ||
+        item.totalGuests >= (guests === "Add guests" ? 0 : guests)) &&
+      // Check condition for dates
+      (when === "Anytime" ||
+        when === "No dates selected" || // If no date selected
+        (Array.isArray(when) ? 
+          // When 'when' is an array, check if item dates match any date in the array
+          when.some((date) => item.startDate === date) :
+          // When 'when' is a string, check if it's a range and matches the item dates
           (typeof when === "string" &&
             when !== "No dates selected" &&
             (() => {
@@ -123,9 +116,10 @@ export default function SearchHomeScreen({
                 new Date(item.startDate) >= new Date(startDate) && // Item starts on or after the start date
                 new Date(item.startDate) <= new Date(endDate) // Item starts on or before the end date
               );
-            })()))
+            })())))
     );
   })();
+  
   const filteredDataWithFilter = (() => {
     // Check if any filter criteria are provided
     const hasFilterCriteria =
@@ -504,6 +498,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   tabItem: {
+    width:'20%',
     paddingVertical: 5,
     paddingHorizontal: 10,
     flexDirection: "column",

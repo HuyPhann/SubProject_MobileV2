@@ -14,6 +14,7 @@ import SearchHomeScreen from "./screens/SearchHomeScreen";
 import SearchScreen from "./screens/SearchScreen";
 import LocationDetailScreen from "./screens/LocationDetailScreen";
 import FavoriteHomeScreen from "./screens/FavoriteHomeScreen";
+import FacilitiesAndServicesScreen from "./screens/FacilitiesAndServicesScreen";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -61,6 +62,10 @@ export default function App() {
         <Stack.Screen
           name="Location Detail Screen"
           component={LocationDetailScreen}
+        />
+        <Stack.Screen
+          name="Facilities And Services Screen"
+          component={FacilitiesAndServicesScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>

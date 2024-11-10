@@ -9,7 +9,7 @@ import {
 import mainStyle from '../assets/stylesheet/StyleSheet.js';
 import DestinationSelector from './DestinationSelector';
 import DatePicker from './Datepicker';
-import GuestNumberSelector from './QuestNumberSelector';
+import GuestNumberSelector from './GuestNumberSelector.js';
 
 const SearchScreen = ({ navigation }) => {
   const [destination, setDestination] = useState('');
