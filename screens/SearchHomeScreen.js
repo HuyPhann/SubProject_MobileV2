@@ -223,12 +223,13 @@ export default function SearchHomeScreen({
   };
 
   const toggleLocation = (locationType) => {
-    if (selectedLocations.includes(locationType)) {
-      setSelectedLocations(selectedLocations.filter((l) => l !== locationType));
+    if (selectedLocations === locationType) {
+      setSelectedLocations(""); // Deselect if clicked again
     } else {
-      setSelectedLocations([...selectedLocations, locationType]);
+      setSelectedLocations(locationType); // Set only one location type
     }
   };
+  
   const renderItem = ({ item }) => (
     <Pressable
       onMouseEnter={() => setHoveredId(item.id)}
@@ -316,72 +317,61 @@ export default function SearchHomeScreen({
       guests === "Add guests" &&
       when === "Anytime" ? (
         <View style={styles.tabs}>
-          <TouchableOpacity
-            style={[
-              styles.tabItem,
-              selectedLocations.includes("Beach") && styles.tabItemActive,
-            ]}
-            onPress={() => toggleLocation("Beach")}
+        <TouchableOpacity
+          style={[
+            styles.tabItem,
+            selectedLocations === "Beach" && styles.tabItemActive,
+          ]}
+          onPress={() => toggleLocation("Beach")}
+        >
+          <Image
+            source={require("../assets/images/icons/beach.png")}
+            style={styles.icon}
+          />
+          <Text
+            style={selectedLocations === "Beach" ? styles.tabTextActive : styles.tabText}
           >
-            <Image
-              source={require("../assets/images/icons/beach.png")}
-              style={styles.icon}
-            />
-            <Text
-              style={
-                selectedLocations.includes("Beach")
-                  ? styles.tabTextActive
-                  : styles.tabText
-              }
-            >
-              Beach
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.tabItem,
-              selectedLocations.includes("Mountain") && styles.tabItemActive,
-            ]}
-            onPress={() => toggleLocation("Mountain")}
+            Beach
+          </Text>
+        </TouchableOpacity>
+      
+        <TouchableOpacity
+          style={[
+            styles.tabItem,
+            selectedLocations === "Mountain" && styles.tabItemActive,
+          ]}
+          onPress={() => toggleLocation("Mountain")}
+        >
+          <Image
+            source={require("../assets/images/icons/mountain.png")}
+            style={styles.icon}
+          />
+          <Text
+            style={selectedLocations === "Mountain" ? styles.tabTextActive : styles.tabText}
           >
-            <Image
-              source={require("../assets/images/icons/mountain.png")}
-              style={styles.icon}
-            />
-            <Text
-              style={
-                selectedLocations.includes("Mountain")
-                  ? styles.tabTextActive
-                  : styles.tabText
-              }
-            >
-              Mountain
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.tabItem,
-              selectedLocations.includes("Camping") && styles.tabItemActive,
-            ]}
-            onPress={() => toggleLocation("Camping")}
+            Mountain
+          </Text>
+        </TouchableOpacity>
+      
+        <TouchableOpacity
+          style={[
+            styles.tabItem,
+            selectedLocations === "Camping" && styles.tabItemActive,
+          ]}
+          onPress={() => toggleLocation("Camping")}
+        >
+          <Image
+            source={require("../assets/images/icons/camping.png")}
+            style={styles.icon}
+          />
+          <Text
+            style={selectedLocations === "Camping" ? styles.tabTextActive : styles.tabText}
           >
-            <Image
-              source={require("../assets/images/icons/camping.png")}
-              style={styles.icon}
-            />
-            <Text
-              style={
-                selectedLocations.includes("Camping")
-                  ? styles.tabTextActive
-                  : styles.tabText
-              }
-            >
-              Camping
-            </Text>
-          </TouchableOpacity>
-        </View>
+            Camping
+          </Text>
+        </TouchableOpacity>
+      </View>
+      
       ) : (
         <View style={styles.checkboxContainer}>
           <View style={mainStyle.col_flex}>

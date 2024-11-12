@@ -16,6 +16,7 @@ import LocationDetailScreen from "./screens/LocationDetailScreen";
 import FavoriteHomeScreen from "./screens/FavoriteHomeScreen";
 import FacilitiesAndServicesScreen from "./screens/FacilitiesAndServicesScreen";
 import ReviewsScreen from "./screens/ReviewsScreen";
+import ConfirmAndPayScreen from "./screens/ConfirmAndPayScreen";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -23,13 +24,21 @@ export default function App() {
   const updateData = (updatedItems) => {
     setAccommodations(updatedItems);
   };
+  
   useEffect(() => {
     fetch("https://672af17b976a834dd024f697.mockapi.io/accomodation") // Replace 'localhost' with your IP address if needed
       .then((response) => response.json())
       .then((data) => setAccommodations(data))
       .catch((error) => console.error(error));
   }, []);
+  const [paymentData, setPaymentData] = useState([
+    { id: '24', amount: '1200', date: '2024-11-16', time: '12:00 PM' },
+    { id: '11', amount: '300', date: '2024-11-13', time: '12:00 PM' },
+    { id: '22', amount: '1200', date: '2024-11-14', time: '12:00 PM' },
+    { id: '12', amount: '300', date: '2024-11-15', time: '12:00 PM' },
+  ]);
 
+  
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -69,6 +78,11 @@ export default function App() {
           component={FacilitiesAndServicesScreen}
         />
         <Stack.Screen name="Reviews Screen" component={ReviewsScreen} />
+        <Stack.Screen name="Confirm And Pay Screen">
+          {(props) => (
+            <ConfirmAndPayScreen {...props} paymentData={paymentData} />
+          )}
+        </Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
   );
