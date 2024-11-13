@@ -17,6 +17,7 @@ import FavoriteHomeScreen from "./screens/FavoriteHomeScreen";
 import FacilitiesAndServicesScreen from "./screens/FacilitiesAndServicesScreen";
 import ReviewsScreen from "./screens/ReviewsScreen";
 import ConfirmAndPayScreen from "./screens/ConfirmAndPayScreen";
+import PaymentSuccessScreen from "./screens/PaymentSuccessScreen";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -83,6 +84,10 @@ export default function App() {
             <ConfirmAndPayScreen {...props} paymentData={paymentData} />
           )}
         </Stack.Screen>
+        <Stack.Screen
+          name="Payment Success Screen"
+          component={PaymentSuccessScreen}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
