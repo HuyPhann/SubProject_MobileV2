@@ -19,6 +19,7 @@ import ReviewsScreen from "./screens/ReviewsScreen";
 import ConfirmAndPayScreen from "./screens/ConfirmAndPayScreen";
 import PaymentSuccessScreen from "./screens/PaymentSuccessScreen";
 import BookingHomeScreen from "./screens/BookingHomeScreen";
+import BookingLocationDetailScreen from "./screens/BookingLocationDetailScreeen";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -94,6 +95,14 @@ export default function App() {
             <BookingHomeScreen
               {...props}
               data={accommodations}
+              paymentData={paymentData}
+            />
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="Booking Location Detail Screen">
+          {(props) => (
+            <BookingLocationDetailScreen
+              {...props}
               paymentData={paymentData}
             />
           )}
