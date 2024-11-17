@@ -20,6 +20,8 @@ import ConfirmAndPayScreen from "./screens/ConfirmAndPayScreen";
 import PaymentSuccessScreen from "./screens/PaymentSuccessScreen";
 import BookingHomeScreen from "./screens/BookingHomeScreen";
 import BookingLocationDetailScreen from "./screens/BookingLocationDetailScreeen";
+import Login from "./screens/Login";
+import Register from "./screens/Register";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -45,13 +47,21 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Search Home Screen"
+        initialRouteName="Create An Account Screen"
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="Begin Screen" component={BeginScreen} />
         <Stack.Screen
           name="Create An Account Screen"
           component={CreateAnAccountScreen}
+        />
+        <Stack.Screen
+          name="Register"
+          component={Register}
+        />
+        <Stack.Screen
+          name="Login"
+          component={Login}
         />
         <Stack.Screen name="Search Home Screen">
           {(props) => (

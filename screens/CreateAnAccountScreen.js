@@ -47,7 +47,7 @@ export default function CreateAnAccountScreen({ navigation }) {
     const regex = selectedCountryData.regex;
     if (regex.test(phoneNumber)) {
       // Navigate to HomeScreen if phone number is valid
-      navigation.navigate('Search Home Screen');
+      navigation.navigate('Register');
     } else {
       // Show error modal if phone number is invalid
       setIsErrorModalVisible(true);
@@ -58,9 +58,10 @@ export default function CreateAnAccountScreen({ navigation }) {
     <View
       style={[
         mainStyle.container,
-        mainStyle.column_left_flex,
+      //  mainStyle.column_left_flex,
         mainStyle.space_between_flex,
-      ]}>
+      ]}
+      >
       <View></View>
       <Text style={mainStyle.bold_text}>Create an account</Text>
 
@@ -93,12 +94,12 @@ export default function CreateAnAccountScreen({ navigation }) {
           <TouchableOpacity
             onPress={handleContinue}
             style={[styles.aqua_button, mainStyle.row_center_flex]}>
-            <Text style={{ color: 'white' }}>Continue</Text>
+            <Text style={{ color: 'black', fontWeight:'bold' }}>Continue</Text>
           </TouchableOpacity>
 
           {/* Continue with Apple */}
           <TouchableOpacity
-            onPress={() => navigation.navigate('Search Home Screen')}
+          //  onPress={() => navigation.navigate('Search Home Screen')}
             style={[styles.apple_button, mainStyle.row_center_flex]}>
             <Image
               source={require('../assets/images/icons/apple.svg')}
@@ -109,7 +110,7 @@ export default function CreateAnAccountScreen({ navigation }) {
 
           {/* Continue with Facebook */}
           <TouchableOpacity
-            onPress={() => navigation.navigate('Search Home Screen')}
+          //  onPress={() => navigation.navigate('Search Home Screen')}
             style={[styles.facebook_button, mainStyle.row_center_flex]}>
             <Image
               source={require('../assets/images/icons/facebook.svg')}
@@ -120,7 +121,7 @@ export default function CreateAnAccountScreen({ navigation }) {
 
           {/* Continue with Google */}
           <TouchableOpacity
-            onPress={() => navigation.navigate('Search Home Screen')}
+          //  onPress={() => navigation.navigate('Search Home Screen')}
             style={[styles.google_button, mainStyle.row_center_flex]}>
             <Image
               source={require('../assets/images/icons/google.svg')}
@@ -144,7 +145,9 @@ export default function CreateAnAccountScreen({ navigation }) {
           { width: '100%', alignSelf: 'flex-end' },
         ]}>
         <Text>Already have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Search Home Screen')}>
+        <TouchableOpacity 
+        onPress={() => navigation.navigate('Login')}
+        >
           <Text style={styles.log_in}>Log in</Text>
         </TouchableOpacity>
       </View>
@@ -196,12 +199,20 @@ export default function CreateAnAccountScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff', // Nền trắng cho toàn màn hình
+   // paddingHorizontal: 20, // Khoảng cách hai bên
+  },
   phoneInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
     borderColor: '#ccc',
     marginVertical: 10,
+    width: '100%',
   },
   countryFlag: {
     width: 24,
@@ -216,6 +227,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
+    marginRight: 10,
   },
   headNumberText: {
     fontSize: 16,
@@ -226,14 +238,85 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 16,
   },
+  aqua_button: {
+    backgroundColor: 'aqua',
+    width: '100%',
+    borderRadius: 5,
+    padding: 10,
+    marginVertical: 10,
+    alignItems: 'center',
+  },
+  apple_button: {
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: 'black',
+    width: '100%',
+    borderRadius: 5,
+    padding: 10,
+    marginVertical: 10,
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  facebook_button: {
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: 'blue',
+    width: '100%',
+    borderRadius: 5,
+    padding: 10,
+    marginVertical: 10,
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  google_button: {
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: 'red',
+    width: '100%',
+    borderRadius: 5,
+    padding: 10,
+    marginVertical: 10,
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  icon: {
+    width: 24,
+    height: 24,
+    marginRight: 8,
+  },
+  appleText: {
+    color: 'black',
+    fontSize: 16,
+  },
+  facebookText: {
+    color: 'blue',
+    fontSize: 16,
+  },
+  googleText: {
+    color: 'red',
+    fontSize: 16,
+  },
+  termsText: {
+    fontSize: 12,
+    color: '#555',
+    textAlign: 'center',
+    marginVertical: 10,
+  },
   linkText: {
     color: 'blue',
     textDecorationLine: 'underline',
   },
+  logInText: {
+    fontSize: 14,
+    color: 'blue',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 10,
+  },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Hiệu ứng nền mờ
   },
   modalContent: {
     backgroundColor: 'white',
@@ -244,6 +327,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
+    fontWeight: 'bold',
     marginBottom: 10,
   },
   countryItem: {
@@ -252,6 +336,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderColor: '#ccc',
+    width: '100%',
   },
   modalCountryText: {
     fontSize: 16,
@@ -263,57 +348,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     backgroundColor: '#d9534f',
     borderRadius: 5,
+    alignItems: 'center',
   },
   closeButtonText: {
     color: 'white',
     fontSize: 16,
-  },
-  aqua_button: {
-    backgroundColor: 'aqua',
-    width: '100%',
-    borderRadius: 5,
-    padding: 5,
-  },
-  apple_button: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: 'black',
-    width: '100%',
-    borderRadius: 5,
-    padding: 5,
-  },
-  facebook_button: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: 'blue',
-    width: '100%',
-    borderRadius: 5,
-    padding: 5,
-  },
-  google_button: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: 'red',
-    width: '100%',
-    borderRadius: 5,
-    padding: 5,
-  },
-  icon: {
-    width: 24,
-    height: 24,
-    marginRight: 8,
-  },
-  appleText: {
-    color: 'black',
-  },
-  facebookText: {
-    color: 'blue',
-  },
-  googleText: {
-    color: 'red',
   },
   log_in: {
     color: 'blue',
     fontWeight: 'bold',
   },
 });
+

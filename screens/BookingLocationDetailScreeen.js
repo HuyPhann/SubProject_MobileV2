@@ -130,7 +130,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
- 
   unbookText: {
     color: 'white',
     fontSize: 16,
