@@ -13,15 +13,10 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
-// import { getAuth, signInWithEmailAndPassword } from "../firebaseConfig";
-// import { auth } from "../firebaseConfig";
 import { signInWithEmailAndPassword } from "firebase/auth"; // Import hàm đúng
 import { auth } from "../firebaseConfig"; // Import đối tượng auth từ cấu hình của bạn
 
-// Dữ liệu mẫu cho người dùng
-// const users = [
-//     { email: 'huy@gmail.com', password: '1111' },
-// ];
+
 
 const Login = () => {
   const navigation = useNavigation();
@@ -31,20 +26,7 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
-  // const handleLogin = () => {
-  //     if (!email.endsWith('@gmail.com')) {
-  //         setErrorMessage('Email phải kết thúc bằng @gmail.com');
-  //         return;
-  //     }
-
-  //     const user = users.find(user => user.email === email && user.password === password);
-  //     if (user) {
-  //         setErrorMessage('');
-  //         navigation.navigate('Search Home Screen');
-  //     } else {
-  //         setErrorMessage('Thông tin sai.');
-  //     }
-  // };
+ 
   const handleLogin = () => {
     signInWithEmailAndPassword(auth, email, password)
       .then(() => {
@@ -192,6 +174,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     marginBottom: 20,
+    borderRadius:50
   },
   inputContainer: {
     flexDirection: "row",

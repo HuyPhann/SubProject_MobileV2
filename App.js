@@ -22,6 +22,7 @@ import BookingHomeScreen from "./screens/BookingHomeScreen";
 import BookingLocationDetailScreen from "./screens/BookingLocationDetailScreeen";
 import Login from "./screens/Login";
 import Register from "./screens/Register";
+import Profile from "./screens/ProfileScreen";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
 import {db} from "./firebaseConfig"
 const Stack = createNativeStackNavigator();
@@ -81,7 +82,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Search Home Screen"
+        initialRouteName="Login"
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="Begin Screen" component={BeginScreen} />
@@ -96,6 +97,10 @@ export default function App() {
         <Stack.Screen
           name="Login"
           component={Login}
+        />
+        <Stack.Screen
+          name="Profile Home Screen"
+          component={Profile}
         />
         <Stack.Screen name="Search Home Screen">
           {(props) => (

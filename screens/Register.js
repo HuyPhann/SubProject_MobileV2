@@ -16,91 +16,85 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { auth } from "../firebaseConfig"; // Import Firebase auth
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { collection, addDoc } from "firebase/firestore"; // Import các hàm từ Firestore
+import { db } from "../firebaseConfig"; // Import Firestore instance
 
 
-const Register = () => {
+const Register = ({route}) => {
   const navigation = useNavigation();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-
+  const { phoneNumber } = route.params;
  
-//   const handleRegister = () => {
-//     if (!email || !password) {
-//       Alert.alert("Error", "Please fill in all fields.");
-//       return;
-//     }
 
-//     createUserWithEmailAndPassword(auth, email, password)
-//       .then((userCredential) => {
-//         //const user = userCredential.user;
-//         setEmail("");
-//         setPassword("");
-//         Alert.alert("Success", "Registration successful!", [
-//             {
-//                 text: 'Cancel',
-//                 onPress: () => console.log('Cancel Pressed'),
-//                 style: 'cancel',
-//               },
-//           { text: "OK", onPress: () => {navigation.navigate("Login")} },
-//         ]);
-       
-//       })
-//       .catch((error) => {
-//         let message = "Registration failed!";
-//         if (error.code === "auth/email-already-in-use") {
-//           message = "This email is already in use.";
-//         } else if (error.code === "auth/invalid-email") {
-//           message = "Invalid email format.";
-//         } else if (error.code === "auth/weak-password") {
-//           message = "Password should be at least 6 characters.";
-//         }
-//         setErrorMessage(message); // Set error message for display
-//      //   Alert.alert("Error", message); // Hiển thị cảnh báo lỗi
-
-//       });
-//   };
 const [modalVisible, setModalVisible] = useState(false);
 const [modalMessage, setModalMessage] = useState("");
 
-const handleRegister = () => {
-  if (!email || !password) {
-    setModalMessage("Please fill in all fields.");
+const handleRegister = async () => {
+  if (!name || !email || !password) {
+    setModalMessage("Vui lòng điền đầy đủ thông tin.");
     setModalVisible(true);
     return;
   }
 
-  createUserWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
-      setEmail("");
-      setPassword("");
-      setModalMessage("Registration successful!");
-      setModalVisible(true);
-    })
-    .catch((error) => {
-      let message = "Registration failed!";
-      if (error.code === "auth/email-already-in-use") {
-        message = "This email is already in use.";
-      } else if (error.code === "auth/invalid-email") {
-        message = "Invalid email format.";
-      } else if (error.code === "auth/weak-password") {
-        message = "Password should be at least 6 characters.";
-      }
-      setModalMessage(message);
-      setModalVisible(true);
+  try {
+    // Đăng ký người dùng bằng email và mật khẩu
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+    // Lấy đối tượng người dùng
+    const user = userCredential.user;
+
+    // Lưu thông tin người dùng bổ sung vào Firestore
+    await addDoc(collection(db, "users"), {
+      uid: user.uid, // Lưu Firebase Auth UID
+      name: name,
+      email: email,
+      phoneNumber: phoneNumber,
     });
+
+    // Xóa dữ liệu input và hiển thị thông báo thành công
+    setEmail("");
+    setPassword("");
+    setName("");
+    setModalMessage("Đăng ký thành công!");
+    setModalVisible(true);
+  } catch (error) {
+    let message = "Đăng ký thất bại!";
+    if (error.code === "auth/email-already-in-use") {
+      message = "Email này đã được sử dụng.";
+    } else if (error.code === "auth/invalid-email") {
+      message = "Định dạng email không hợp lệ.";
+    } else if (error.code === "auth/weak-password") {
+      message = "Mật khẩu phải ít nhất 6 ký tự.";
+    }
+    setModalMessage(message);
+    setModalVisible(true);
+  }
 };
 
   return (
     <View style={styles.container}>
+      
       <View style={styles.logoContainer}>
         <Image
           source={require("../assets/images/logos/app-logo.png")}
           style={styles.logo}
         />
+
         <Text style={{ fontSize: 40, fontWeight: "bold" }}>Register</Text>
         <Text>Create a new account</Text>
+        <View style={styles.inputContainer}>
+          <Icon name="person" size={20} style={styles.icon} />
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your name"
+           value={name}
+           onChangeText={setName}
+          />
+        </View>
         <View style={styles.inputContainer}>
           <Icon name="email" size={20} style={styles.icon} />
           <TextInput
@@ -220,6 +214,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     marginBottom: 20,
+    borderRadius:50
   },
   inputContainer: {
     flexDirection: "row",

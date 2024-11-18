@@ -47,7 +47,7 @@ export default function CreateAnAccountScreen({ navigation }) {
     const regex = selectedCountryData.regex;
     if (regex.test(phoneNumber)) {
       // Navigate to HomeScreen if phone number is valid
-      navigation.navigate('Register');
+      navigation.navigate('Register', { phoneNumber: phoneNumber });
     } else {
       // Show error modal if phone number is invalid
       setIsErrorModalVisible(true);
