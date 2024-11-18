@@ -7,12 +7,9 @@ import {
   StyleSheet,
   ScrollView,
   Modal,
+  Alert,
 } from 'react-native';
 import { RadioButton } from 'react-native-paper';
-import firestore from '@react-native-firebase/firestore'; // Firebase Firestore import
-import { db } from "../firebaseConfig"; // Đường dẫn đúng đến file firebaseConfig.js
-import { collection, addDoc } from "firebase/firestore";
-import { auth } from "../firebaseConfig";
 
 const calculateNights = (startDate, endDate) => {
   const start = new Date(startDate);
@@ -20,10 +17,14 @@ const calculateNights = (startDate, endDate) => {
 
   const differenceInTime = end.getTime() - start.getTime();
   let nights = differenceInTime / (1000 * 3600 * 24);
+  console.log(nights);
+  
+
+//   const randomShift = Math.floor(Math.random() * 2);
+//   nights += randomShift;
 
   return Math.max(1, nights);
 };
-
 
 const ConfirmAndPayScreen = ({ navigation, route, paymentData }) => {
   const { item } = route.params;
@@ -33,10 +34,6 @@ const ConfirmAndPayScreen = ({ navigation, route, paymentData }) => {
   const [totalBasePrice, setTotalBasePrice] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [nights, setNights] = useState(1);
-  const currentUser = auth.currentUser;
-const userId = currentUser.uid;
-console.log(userId);
-
   const randomFeeOptions = [
     { label: 'Cleaning fee', amount: 10 },
     { label: 'Service fee', amount: 20 },
@@ -59,67 +56,49 @@ console.log(userId);
   useEffect(() => {
     const fees = getRandomFees();
     setRandomFees(fees);
-
+  
     const calculatedNights = calculateNights(item.startDate, item.endDate);
     setNights(calculatedNights); // Set the calculated nights
-
+  
     const pricePerNight = parseInt(item.price.replace('$', ''));
     const basePrice = pricePerNight * calculatedNights;
     const totalRandomFees = fees.reduce((total, fee) => total + fee.amount, 0);
-
+  
     const taxRate = item.taxInclusive ? 0 : Math.random() * (15 - 10) + 10; // 10% to 15% random tax
     const taxAmount = (basePrice + totalRandomFees) * (taxRate / 100);
-
+  
     const total = basePrice + totalRandomFees + taxAmount;
     setTotalBasePrice(basePrice);
     setTotalPrice(total);
   }, [item]);
 
+  const handleBooking = () => {
+  const existingBooking = paymentData.find((payment) => payment.id === item.id);
 
-  
-  const handleBooking = async () => {
-    const existingBooking = paymentData.find((payment) => payment.id === item.id);
-  
-    if (existingBooking) {
-      setModalVisible(true); // Hiển thị modal nếu địa điểm đã được đặt
-    } else {
-      // Thêm booking vào paymentData với ngày và giờ hiện tại
-      const now = new Date();
-      const date = now.toISOString().split('T')[0]; // Lấy ngày hiện tại (YYYY-MM-DD)
-      const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // Lấy giờ hiện tại (HH:MM AM/PM)
-  
-      paymentData.push({
-        id: item.id,
-        amount: totalPrice.toFixed(2),
-        date: date,
-        time: time,
-      });
-  
-      try {
-        // Thêm tài liệu mới vào Firestore với userId là currentUser.uid
-        await addDoc(collection(db, "bookings"), {
-          itemId: item.id,
-          amount: totalPrice.toFixed(2),
-          date: date,
-          time: time,
-          userId: userId, // Lấy userId của người dùng hiện tại
-          status: "booked", // Trạng thái đơn đặt
-        });
-  
-        console.log("Booking successfully saved to Firestore");
-  
-        // Điều hướng sau khi lưu thành công
-        navigation.navigate("Payment Success Screen", {
-          amount: totalPrice,
-          refNumber: Math.random().toString(36).substring(2, 15), // Số tham chiếu ngẫu nhiên
-          itemID: item.id,
-        });
-      } catch (error) {
-        console.error("Error saving booking to Firestore: ", error);
-      }
-    }
-  };
-  
+  if (existingBooking) {
+    setModalVisible(true); // Hiển thị modal nếu địa điểm đã được đặt
+  } else {
+    // Thêm booking vào paymentData với ngày và giờ hiện tại
+    const now = new Date();
+    const date = now.toISOString().split('T')[0]; // Lấy ngày hiện tại (YYYY-MM-DD)
+    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // Lấy giờ hiện tại (HH:MM AM/PM)
+
+    paymentData.push({
+      id: item.id,
+      amount: totalPrice.toFixed(2),
+      date: date,
+      time: time,
+    });
+
+    navigation.navigate('Payment Success Screen', {
+      amount: totalPrice,
+      refNumber: Math.random().toString(36).substring(2, 15), // Số tham chiếu ngẫu nhiên
+      itemID: item.id,
+    });
+  }
+};
+
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
@@ -223,25 +202,20 @@ console.log(userId);
       </View>
 
       <View style={styles.bookNowButtonContainer}>
-        <TouchableOpacity
-          style={styles.bookNowButton}
-          onPress={handleBooking}
-        >
-          <Text style={styles.bookNowButtonText}>Book Now</Text>
+        <TouchableOpacity style={styles.bookNowButton} onPress={handleBooking}>
+          <Text style={styles.bookNowButtonText}>Book now</Text>
         </TouchableOpacity>
       </View>
 
-      <Modal visible={modalVisible} transparent={true} animationType="fade">
+      <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalText}>
-              This accommodation is already booked.
-            </Text>
+            <Text style={styles.modalText}>This place has already been booked!</Text>
             <TouchableOpacity
-              onPress={() => setModalVisible(false)}
               style={styles.modalButton}
+              onPress={() => setModalVisible(false)}
             >
-              <Text style={styles.modalButtonText}>OK</Text>
+              <Text style={styles.modalButtonText}>Close</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -252,35 +226,38 @@ console.log(userId);
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingTop: 20,
+    padding: 16,
+    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 20,
   },
   backButton: {
-    fontSize: 24,
+    fontSize: 20,
     marginRight: 10,
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   listingContainer: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 20,
   },
   listingInfo: {
     flex: 1,
+    marginRight: 10,
   },
   price: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   listingTitle: {
     fontSize: 16,
+    fontWeight: 'bold',
   },
   rating: {
     fontSize: 14,
@@ -290,28 +267,27 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 10,
-    marginLeft: 10,
   },
   tripDetailsContainer: {
     marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 10,
   },
   tripDetailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 10,
   },
   tripDetailLabel: {
-    fontSize: 16,
+    fontSize: 14,
+    color: 'gray',
   },
   editButton: {
-    fontSize: 20,
-    color: 'blue',
+    fontSize: 16,
+    color: '#00a',
   },
   paymentOptionsContainer: {
     marginBottom: 20,
@@ -319,7 +295,7 @@ const styles = StyleSheet.create({
   paymentOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 10,
   },
   paymentOptionInfo: {
     marginLeft: 10,
@@ -341,29 +317,29 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   priceLabel: {
-    fontSize: 16,
+    fontSize: 14,
+    color: 'gray',
   },
   totalLabel: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   totalPrice: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: 'green',
   },
   bookNowButtonContainer: {
-    marginBottom: 30,
+    marginBottom: 20,
   },
   bookNowButton: {
-    backgroundColor: '#4CAF50',
-    padding: 15,
-    borderRadius: 5,
+    backgroundColor: '#00a',
+    paddingVertical: 10,
     alignItems: 'center',
+    borderRadius: 5,
   },
   bookNowButtonText: {
-    fontSize: 18,
-    color: 'white',
+    color: '#fff',
+    fontSize: 16,
     fontWeight: 'bold',
   },
   modalContainer: {
@@ -373,23 +349,24 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
     padding: 20,
     borderRadius: 10,
     alignItems: 'center',
   },
   modalText: {
-    fontSize: 18,
+    fontSize: 16,
     marginBottom: 20,
   },
   modalButton: {
-    backgroundColor: '#4CAF50',
-    padding: 10,
+    backgroundColor: '#00a',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 5,
   },
   modalButtonText: {
+    color: '#fff',
     fontSize: 16,
-    color: 'white',
   },
 });
 

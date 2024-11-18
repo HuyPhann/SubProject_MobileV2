@@ -57,28 +57,7 @@ const PaymentSuccessScreen = ({ navigation, route }) => {
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>Payment method</Text>
-          <View style={styles.paymentMethodContainer}>
-            <Text style={styles.detailValue}>{selectedPaymentMethod}</Text>
-            {/* Payment method icons */}
-            {selectedPaymentMethod === 'Credit card' && (
-              <Image
-                source={require('../assets/images/icons/credit-card-icon.png')} // Replace with appropriate icon
-                style={styles.paymentIcon}
-              />
-            )}
-            {selectedPaymentMethod === 'PayPal' && (
-              <Image
-                source={require('../assets/images/icons/paypal-icon.png')} // Replace with appropriate icon
-                style={styles.paymentIcon}
-              />
-            )}
-            {selectedPaymentMethod === 'Bank transfer' && (
-              <Image
-                source={require('../assets/images/icons/bank-icon.png')} // Replace with appropriate icon
-                style={styles.paymentIcon}
-              />
-            )}
-          </View>
+          <Text style={styles.detailValue}>{selectedPaymentMethod}</Text>
         </View>
 
         {/* Divider */}
@@ -146,15 +125,6 @@ const styles = StyleSheet.create({
   detailValue: {
     fontSize: 14,
     fontWeight: 'bold',
-  },
-  paymentMethodContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  paymentIcon: {
-    width: 20,
-    height: 20,
-    marginLeft: 10,
   },
   divider: {
     marginTop: 60,

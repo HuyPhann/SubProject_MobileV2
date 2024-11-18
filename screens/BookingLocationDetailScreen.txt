@@ -1,68 +1,39 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
   Image,
   TouchableOpacity,
   StyleSheet,
-  ScrollView,
-  Modal
+  ScrollView, Modal
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // Dùng biểu tượng
-import GeneralLocationInfo from './GeneralLocationInfo'; // Điều chỉnh lại đường dẫn nếu cần
-import FacilitiesAndServices from './FacilitiesAndServices'; // Đã cập nhật đường dẫn
-import Reviews from './Reviews'; // Đã cập nhật đường dẫn
+import { Ionicons } from '@expo/vector-icons'; // For icons
+import GeneralLocationInfo from './GeneralLocationInfo'; // Adjust the import path as needed
+import FacilitiesAndServices from './FacilitiesAndServices'; // Updated import
+import Reviews from './Reviews'; // Updated import
 import Policies from './Policies';
 import Description from './Description';
-import { db } from '../firebaseConfig'; // Nhập Firestore instance
 
 export default function BookingLocationDetailScreen({
   navigation,
   route,
-  user,
   paymentData,
+  onUnbook,
 }) {
-  const { item } = route.params || {}; // Lấy dữ liệu từ route.params
+  const { item } = route.params || {}; // Access `paymentData` from route.params
+ 
 
-  // Lấy thông tin thanh toán cho item hiện tại
+  // Get payment information for the current item
   const paymentInfo = paymentData.find((payment) => payment.id === item.id);
-  const amount = paymentInfo ? paymentInfo.amount : 'N/A'; // Hiển thị số tiền hoặc 'N/A'
+  const amount = paymentInfo ? paymentInfo.amount : 'N/A'; // Display the amount or 'N/A'
   const bookingDate = paymentInfo
     ? `${paymentInfo.date} at ${paymentInfo.time}`
     : 'N/A';
 
-  //const [isModalVisible, setIsModalVisible] = useState(false);
+  // Generate a random number of reviews (between 5 and 300)
+  const randomReviewsCount = Math.floor(Math.random() * (300 - 5 + 1)) + 5; // Between 5 and 300
 
-  // Hàm lưu thông tin đặt phòng vào Firestore
-  const saveBookingToFirestore = async () => {
-    try {
-      // Chuẩn bị dữ liệu đặt phòng
-      const bookingData = {
-        userId: user.uid, // ID người dùng từ thông tin đã đăng nhập
-        accommodationId: item.id,
-        accommodationTitle: item.title,
-        amount: amount,
-        bookingDate: bookingDate,
-        startDate: item.startDate,
-        endDate: item.endDate,
-        totalGuests: item.totalGuests,
-        bookingStatus: 'confirmed', // Trạng thái có thể thay đổi tùy theo yêu cầu
-        createdAt: new Date(),
-      };
-
-      // Lưu dữ liệu đặt phòng vào Firestore dưới collection 'bookings'
-      await db.collection('bookings').add(bookingData);
   
-  
-  //    setIsModalVisible(true); // Hiển thị modal thành công sau khi lưu booking
-
-    } catch (error) {
-      console.error('Lỗi khi lưu booking vào Firestore: ', error);
-    }
-  };
-
-  // Tạo số lượng đánh giá ngẫu nhiên (từ 5 đến 300)
-  const randomReviewsCount = Math.floor(Math.random() * (300 - 5 + 1)) + 5; // Từ 5 đến 300
 
   return (
     <View style={styles.container}>

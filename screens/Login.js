@@ -98,7 +98,7 @@ const Login = () => {
           <Text style={styles.errorMessage}>{errorMessage}</Text>
         ) : null}
         <View style={{ width: "100%" }}>
-          <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+          <TouchableOpacity onPress={() => navigation.navigate("Create An Account Screen")}>
             <Text style={styles.registerlink}>Register</Text>
           </TouchableOpacity>
         </View>
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   },
   continueButton: {
     marginTop: 20,
-    backgroundColor: "blue",
+    backgroundColor: "#00BCD4",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,

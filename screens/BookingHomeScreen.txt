@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,79 +7,33 @@ import {
   FlatList,
   TouchableOpacity,
   Pressable,
-} from "react-native";
-import Icon from "react-native-vector-icons/FontAwesome";
-import {
-  getFirestore,
-  collection,
-  query,
-  where,
-  getDocs,
-} from "firebase/firestore";
-import { auth } from "../firebaseConfig"; // Đảm bảo rằng bạn đã import auth từ firebaseConfig
-import mainStyle from "../assets/stylesheet/StyleSheet.js";
+} from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import mainStyle from '../assets/stylesheet/StyleSheet.js';
 
 const BookingHomeScreen = ({ navigation, data, paymentData }) => {
   const [hoveredId, setHoveredId] = useState(null);
-  const [userBookings, setUserBookings] = useState([]);
-
-  // Sử dụng auth.currentUser thay vì useAuth context
-  const currentUser = auth.currentUser;
-
-  useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        if (currentUser?.uid) {
-          const db = getFirestore();
-          const bookingsRef = collection(db, "bookings");
-          const q = query(bookingsRef, where("userId", "==", currentUser.uid));
-          const querySnapshot = await getDocs(q);
-    
-          if (!querySnapshot.empty) {
-            const bookings = querySnapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            }));
-            console.log("Fetched Bookings:", bookings);
-            setUserBookings(bookings);
-          } else {
-            console.log("No bookings found for this user.");
-            setUserBookings([]); // Nếu không có kết quả, đặt mảng trống
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching bookings:", error.message); // Ghi lại thông tin chi tiết lỗi
-      }
-    };
-    
-
-    fetchBookings();
-  }, [currentUser]);
 
   // Lọc các item có trong paymentData
-  // const filteredData = data.filter((item) =>
-  //   userBookings.some((booking) => booking.accommodationId === item.id)
-  // );
-  const filteredData = data.filter((item) =>
-    userBookings.some((booking) => booking.itemId === item.id)
+  const filteredData = data.filter(item =>
+    paymentData.some(payment => payment.id === item.id)
   );
 
   const renderItem = ({ item }) => {
     // Lấy thông tin thanh toán từ paymentData
-    const paymentInfo = paymentData.find((payment) => payment.id === item.id);
-    const amount = paymentInfo ? paymentInfo.amount : "N/A"; // Hiển thị số tiền hoặc 'N/A'
-    const bookingDate = paymentInfo
-      ? `${paymentInfo.date} at ${paymentInfo.time}`
-      : "N/A";
+    const paymentInfo = paymentData.find(payment => payment.id === item.id);
+    const amount = paymentInfo ? paymentInfo.amount : 'N/A'; // Hiển thị số tiền hoặc 'N/A'
+    const bookingDate = paymentInfo ? `${paymentInfo.date} at ${paymentInfo.time}` : 'N/A';
 
     return (
       <Pressable
         onMouseEnter={() => setHoveredId(item.id)}
         onMouseLeave={() => setHoveredId(null)}
-        style={[styles.card, hoveredId === item.id && styles.cardHovered]}
-        onPress={() =>
-          navigation.navigate("Booking Location Detail Screen", { item })
-        }
+        style={[
+          styles.card,
+          hoveredId === item.id && styles.cardHovered,
+        ]}
+        onPress={() => navigation.navigate('Booking Location Detail Screen', { item })}
       >
         <Image source={item.image} style={styles.image} />
         <View style={styles.infoContainer}>
@@ -100,9 +54,7 @@ const BookingHomeScreen = ({ navigation, data, paymentData }) => {
           {/* Quốc gia */}
           <View style={styles.iconRow}>
             <Icon name="flag" size={18} color="gray" />
-            <Text style={styles.country}>
-              {item.country} - {item.location}
-            </Text>
+            <Text style={styles.country}>{item.country} - {item.location}</Text>
           </View>
 
           {/* Loại chỗ ở */}
@@ -121,17 +73,14 @@ const BookingHomeScreen = ({ navigation, data, paymentData }) => {
           <View style={styles.iconRow}>
             <Icon name="bed" size={18} color="gray" />
             <Text style={styles.infoText}>
-              {item.roomsAndBeds.beds} beds, {item.roomsAndBeds.bedroom}{" "}
-              bedrooms
+              {item.roomsAndBeds.beds} beds, {item.roomsAndBeds.bedroom} bedrooms
             </Text>
           </View>
 
           {/* Số phòng tắm */}
           <View style={styles.iconRow}>
             <Icon name="shower" size={18} color="gray" />
-            <Text style={styles.infoText}>
-              {item.roomsAndBeds.bathroom} bathrooms
-            </Text>
+            <Text style={styles.infoText}>{item.roomsAndBeds.bathroom} bathrooms</Text>
           </View>
 
           {/* Ngày đặt và thời gian */}
@@ -151,69 +100,58 @@ const BookingHomeScreen = ({ navigation, data, paymentData }) => {
       </Pressable>
     );
   };
+
   return (
     <View style={mainStyle.container}>
       <Text style={styles.heading}>Your Bookings</Text>
       <FlatList
         data={filteredData}
         renderItem={renderItem}
-        keyExtractor={item => item.id.toString()} 
+        keyExtractor={item => item.id.toString()} // Đảm bảo id là chuỗi
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={true}
       />
       {filteredData.length === 0 && (
         <Text style={styles.noBookingsText}>No bookings found!</Text>
       )}
-
-      
       {/* Thanh điều hướng ở cuối */}
       <View style={styles.bottomNav}>
         <TouchableOpacity
-          onPress={() => navigation.navigate("Search Home Screen")}
-          style={styles.navItem}
-        >
+          onPress={() => navigation.navigate('Search Home Screen')}
+          style={styles.navItem}>
           <Image
-            source={require("../assets/images/icons/search.png")}
+            source={require('../assets/images/icons/search.png')}
             style={styles.navIcon}
           />
           <Text style={styles.navText}>Search</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => navigation.navigate("Favorite Home Screen")}
-          style={styles.navItem}
-        >
+          onPress={() => navigation.navigate('Favorite Home Screen')}
+          style={styles.navItem}>
           <Image
-            source={require("../assets/images/icons/white_heart.png")}
+            source={require('../assets/images/icons/white_heart.png')}
             style={styles.navIcon}
           />
           <Text style={styles.navText}>Favorites</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate("Booking Home Screen")}
-        >
+        <TouchableOpacity style={styles.navItem}
+          onPress={() => navigation.navigate('Booking Home Screen')}>
           <Image
-            source={require("../assets/images/icons/booking.png")}
+            source={require('../assets/images/icons/booking.png')}
             style={styles.navIcon}
           />
           <Text style={styles.navTextActive}>Bookings</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate("Inbox Home Screen")}
-        >
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Inbox Home Screen')}>
           <Image
-            source={require("../assets/images/icons/inbox.png")}
+            source={require('../assets/images/icons/inbox.png')}
             style={styles.navIcon}
           />
           <Text style={styles.navText}>Inbox</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate("Profile Home Screen")}
-        >
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Profile Home Screen')}>
           <Image
-            source={require("../assets/images/icons/profile.png")}
+            source={require('../assets/images/icons/profile.png')}
             style={styles.navIcon}
           />
           <Text style={styles.navText}>Profile</Text>
@@ -228,23 +166,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 10,
-    overflow: "hidden",
+    overflow: 'hidden',
     marginBottom: 15,
-    position: "relative",
+    position: 'relative',
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: '#ddd',
   },
   cardHovered: {
-    borderColor: "#00AEEF", // Viền đèn LED khi hover
-    shadowColor: "#00AEEF",
+    borderColor: '#00AEEF', // Viền đèn LED khi hover
+    shadowColor: '#00AEEF',
     shadowOpacity: 0.8,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 0 },
   },
   image: {
-    width: "100%",
+    width: '100%',
     height: 150,
   },
   infoContainer: {
@@ -252,50 +190,50 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 5,
   },
   iconRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 5,
   },
   amount: {
     fontSize: 16,
-    color: "#00AEEF",
+    color: '#00AEEF',
     marginLeft: 10,
   },
   rating: {
     marginLeft: 10,
-    color: "gray",
+    color: 'gray',
   },
   country: {
     marginLeft: 10,
-    color: "gray",
+    color: 'gray',
   },
   infoText: {
     marginLeft: 10,
-    color: "gray",
+    color: 'gray',
   },
   heading: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     padding: 16,
   },
   noBookingsText: {
-    textAlign: "center",
+    textAlign: 'center',
     marginVertical: 20,
-    color: "gray",
+    color: 'gray',
   },
   bottomNav: {
-    flexDirection: "row",
-    justifyContent: "space-around",
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: "#ccc",
+    borderTopColor: '#ccc',
   },
   navItem: {
-    alignItems: "center",
+    alignItems: 'center',
   },
   navIcon: {
     width: 24,
@@ -303,11 +241,11 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   navText: {
-    color: "#888",
+    color: '#888',
   },
   navTextActive: {
-    color: "#00BCD4",
-    fontWeight: "bold",
+    color: '#00BCD4',
+    fontWeight: 'bold',
   },
 });
 

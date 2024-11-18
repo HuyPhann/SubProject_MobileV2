@@ -94,7 +94,7 @@ export default function CreateAnAccountScreen({ navigation }) {
           <TouchableOpacity
             onPress={handleContinue}
             style={[styles.aqua_button, mainStyle.row_center_flex]}>
-            <Text style={{ color: 'black', fontWeight:'bold' }}>Continue</Text>
+            <Text style={{ color: 'white', fontWeight:'bold' }}>Continue</Text>
           </TouchableOpacity>
 
           {/* Continue with Apple */}
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   aqua_button: {
-    backgroundColor: 'aqua',
+    backgroundColor: '#00BCD4',
     width: '100%',
     borderRadius: 5,
     padding: 10,

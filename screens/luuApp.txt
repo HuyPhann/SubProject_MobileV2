@@ -22,6 +22,9 @@ import BookingHomeScreen from "./screens/BookingHomeScreen";
 import BookingLocationDetailScreen from "./screens/BookingLocationDetailScreeen";
 import Login from "./screens/Login";
 import Register from "./screens/Register";
+import Profile from "./screens/ProfileScreen";
+import { getFirestore, collection, getDocs } from "firebase/firestore";
+import {db} from "./firebaseConfig"
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -30,12 +33,44 @@ export default function App() {
     setAccommodations(updatedItems);
   };
   
+  // useEffect(() => {
+  //   fetch("https://672af17b976a834dd024f697.mockapi.io/accomodation") // Replace 'localhost' with your IP address if needed
+  //     .then((response) => response.json())
+  //     .then((data) => setAccommodations(data))
+  //     .catch((error) => console.error(error));
+  // }, []);
+
   useEffect(() => {
-    fetch("https://672af17b976a834dd024f697.mockapi.io/accomodation") // Replace 'localhost' with your IP address if needed
-      .then((response) => response.json())
-      .then((data) => setAccommodations(data))
-      .catch((error) => console.error(error));
+    const fetchAccommodations = async () => {
+      try {
+        console.log("Firestore DB:", db);
+  
+        const accommodationsCollection = collection(db, "accommodations");
+        console.log("Collection Reference:", accommodationsCollection);
+  
+        const querySnapshot = await getDocs(accommodationsCollection);
+        if (querySnapshot.empty) {
+          console.warn("No documents found in 'accommodations'");
+        }
+  
+        const data = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        console.log("Fetched Data:", data);
+  
+        setAccommodations(data);
+      } catch (error) {
+        console.error("Error fetching data from Firestore:", error);
+      }
+    };
+  
+    fetchAccommodations();
   }, []);
+  
+  
+  
+
   const [paymentData, setPaymentData] = useState([
     { id: '24', amount: '1200', date: '2024-11-16', time: '12:00 PM' },
     { id: '11', amount: '300', date: '2024-11-13', time: '12:00 PM' },
@@ -62,6 +97,10 @@ export default function App() {
         <Stack.Screen
           name="Login"
           component={Login}
+        />
+        <Stack.Screen
+          name="Profile Home Screen"
+          component={Profile}
         />
         <Stack.Screen name="Search Home Screen">
           {(props) => (
