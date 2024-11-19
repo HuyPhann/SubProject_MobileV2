@@ -1,42 +1,163 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Image,
   FlatList,
-  TouchableOpacity, Pressable
+  TouchableOpacity,
+  Pressable,
+  ActivityIndicator,
 } from 'react-native';
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  deleteDoc 
+} from 'firebase/firestore';
+import { auth } from '../firebaseConfig'; // Import auth
 import mainStyle from '../assets/stylesheet/StyleSheet.js';
 
-export default function FavoriteHomeScreen({ navigation, data, updateData }) {
-  const [items, setItems] = useState(data);
+export default function FavoriteHomeScreen({ navigation }) {
+  const [favorites, setFavorites] = useState([]);
   const [hoveredId, setHoveredId] = useState(null);
-  const toggleFavourite = (id) => {
-    const updatedItems = items.map((item) => {
-      if (item.id === id) {
-        return { ...item, favourite: !item.favourite };
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFavoritesAndAccommodation = async () => {
+      try {
+        const currentUser = auth.currentUser;
+        if (currentUser?.uid) {
+          const db = getFirestore();
+
+          // Step 1: Lấy danh sách favorites của user
+          const favoritesRef = collection(db, 'favorites');
+          const favoritesQuery = query(favoritesRef, where('userId', '==', currentUser.uid));
+          const favoritesSnapshot = await getDocs(favoritesQuery);
+
+          const favoriteItemIds = favoritesSnapshot.docs.map((doc) => doc.data().itemId);
+
+          if (favoriteItemIds.length > 0) {
+            // Step 2: Lấy tất cả accommodations với một query duy nhất
+            const accommodationsRef = collection(db, 'accommodations');
+            const accommodationQuery = query(accommodationsRef, where('id', 'in', favoriteItemIds));
+            const accommodationSnapshot = await getDocs(accommodationQuery);
+
+            const accommodations = accommodationSnapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+
+            setFavorites(accommodations);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching favorites and accommodations:', error);
+      } finally {
+        setLoading(false);
       }
-      return item;
-    });
+    };
 
-    setItems(updatedItems);
-    updateData(updatedItems); // Cập nhật data gốc
+    fetchFavoritesAndAccommodation();
+  }, []);
+
+  // const toggleFavourite = async (id) => {
+  //   try {
+  //     const updatedFavorites = favorites.map((item) =>
+  //       item.id === id ? { ...item, favourite: !item.favourite } : item
+  //     );
+  //     setFavorites(updatedFavorites);
+  //     // TODO: Update Firestore nếu cần
+  //   } catch (error) {
+  //     console.error('Error toggling favourite:', error);
+  //   }
+  // };
+  const toggleFavourite = async (id) => {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser?.uid) return;
+  
+      const db = getFirestore();
+  
+      // Tìm mục yêu thích trong Firestore
+      const favoritesRef = collection(db, 'favorites');
+      const favoritesQuery = query(
+        favoritesRef,
+        where('userId', '==', currentUser.uid),
+        where('itemId', '==', id)
+      );
+      const favoritesSnapshot = await getDocs(favoritesQuery);
+  
+      if (!favoritesSnapshot.empty) {
+        // Lấy tài liệu đầu tiên từ kết quả truy vấn
+        const favoriteDoc = favoritesSnapshot.docs[0];
+  
+        // Xóa tài liệu này khỏi Firestore
+        await deleteDoc(doc(db, 'favorites', favoriteDoc.id));
+  
+        // Cập nhật danh sách cục bộ
+        setFavorites((prevFavorites) =>
+          prevFavorites.filter((item) => item.id !== id)
+        );
+      }
+    } catch (error) {
+      console.error('Error removing favourite:', error);
+    }
   };
-
-  const favoriteItems = items.filter((item) => item.favourite);
-
+  
+  // const renderItem = ({ item }) => (
+  //   <Pressable
+  //     onMouseEnter={() => setHoveredId(item.id)}
+  //     onMouseLeave={() => setHoveredId(null)}
+  //     style={[
+  //       styles.card,
+  //       hoveredId === item.id && styles.cardHovered,
+  //     ]}
+  //     onPress={() => navigation.navigate('Location Detail Screen', { item })}
+  //   >
+  //     <Image source={{ uri: item.image }} style={styles.image} />
+  //     <View style={styles.infoContainer}>
+  //       <View style={styles.titleRow}>
+  //         <Text style={styles.title}>
+  //           {item.title} of {item.country}
+  //         </Text>
+  //         <Text style={styles.rating}>⭐ {item.rating}</Text>
+  //       </View>
+  //       <View style={styles.titleRow}>
+  //         <Text style={styles.location}>{item.type}</Text>
+  //         <Text style={styles.price}>{item.price}</Text>
+  //       </View>
+  //     </View>
+  //     <TouchableOpacity
+  //       style={styles.favoriteIcon}
+  //       onPress={() => toggleFavourite(item.id)}
+  //     >
+  //       <Image
+  //         source={
+  //           item.favourite
+  //             ? require('../assets/images/icons/red_heart.png') // Pink heart for favourites
+  //             : require('../assets/images/icons/white_heart.png') // White heart for non-favourites
+  //         }
+  //         style={styles.heartIcon}
+  //       />
+  //     </TouchableOpacity>
+  //   </Pressable>
+  // );
   const renderItem = ({ item }) => (
     <Pressable
       onMouseEnter={() => setHoveredId(item.id)}
       onMouseLeave={() => setHoveredId(null)}
       style={[
-          styles.card,
-          hoveredId === item.id && styles.cardHovered,
-        ]}
-      onPress={() => navigation.navigate('Location Detail Screen', { item })} // Navigate to LocationDetailScreen
+        styles.card,
+        hoveredId === item.id && styles.cardHovered,
+      ]}
+      onPress={() => navigation.navigate('Location Detail Screen', { item })}
     >
-      <Image source={item.image} style={styles.image} />
+      <Image source={{ uri: item.image }} style={styles.image} />
       <View style={styles.infoContainer}>
         <View style={styles.titleRow}>
           <Text style={styles.title}>
@@ -51,34 +172,42 @@ export default function FavoriteHomeScreen({ navigation, data, updateData }) {
       </View>
       <TouchableOpacity
         style={styles.favoriteIcon}
-        onPress={() => toggleFavourite(item.id)}>
+        onPress={() => toggleFavourite(item.id)}
+      >
         <Image
-          source={
-            item.favourite
-              ? require('../assets/images/icons/red_heart.png') // Pink heart for favourites
-              : require('../assets/images/icons/white_heart.png') // White heart for non-favourites
-          }
+          source={require('../assets/images/icons/red_heart.png')} // Luôn hiển thị trái tim đỏ
           style={styles.heartIcon}
         />
       </TouchableOpacity>
     </Pressable>
   );
+  
+  if (loading) {
+    return (
+      <View style={[mainStyle.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color="#00BCD4" />
+        <Text style={styles.loadingText}>Loading favorites...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={mainStyle.container}>
-      <Text style={styles.heading}>Place your favourite</Text>
+      <Text style={styles.heading}>Your Favorites</Text>
       <FlatList
-        data={favoriteItems}
+        data={favorites}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()} // Chắc chắn rằng id là chuỗi
+        keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.list}
-      //  showsVerticalScrollIndicator={true} // Hiển thị thanh cuộn
+        initialNumToRender={5} // Tối ưu FlatList
+        windowSize={10}
       />
-      {favoriteItems.length === 0 && (
+      {favorites.length === 0 && (
         <Text style={styles.noFavoritesText}>No favorites added yet!</Text>
       )}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity
+
+       <View style={styles.bottomNav}>
+         <TouchableOpacity
           onPress={() => navigation.navigate('Search Home Screen')}
           style={styles.navItem}>
           <Image
@@ -120,6 +249,7 @@ export default function FavoriteHomeScreen({ navigation, data, updateData }) {
           <Text style={styles.navText}>Profile</Text>
         </TouchableOpacity>
       </View>
+
     </View>
   );
 }
