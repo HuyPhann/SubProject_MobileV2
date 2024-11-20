@@ -10,7 +10,14 @@ import {
   Modal,
 } from "react-native";
 import { auth, db } from "../firebaseConfig";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  doc,
+} from "firebase/firestore";
 import { signOut, updatePassword } from "firebase/auth";
 import { useNavigation } from "@react-navigation/native";
 
@@ -25,7 +32,39 @@ const ProfileScreen = ({ navigation }) => {
   const [newPassword, setNewPassword] = useState(""); // New password
   const [confirmPassword, setConfirmPassword] = useState(""); // Confirm password
   const [passwordError, setPasswordError] = useState(""); // Password error
+  const [editModalVisible, setEditModalVisible] = useState(false); // State for edit modal
+  const [name, setName] = useState("");
+  const [birthDay, setBirthDay] = useState("");
+  const [address, setAddress] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
 
+  // useEffect(() => {
+  //   const fetchUserInfo = async () => {
+  //     try {
+  //       const user = auth.currentUser;
+  //       if (user) {
+  //         const usersRef = collection(db, "users");
+  //         const q = query(usersRef, where("uid", "==", user.uid));
+  //         const querySnapshot = await getDocs(q);
+
+  //         if (!querySnapshot.empty) {
+  //           const userDoc = querySnapshot.docs[0];
+  //           setUserInfo(userDoc.data());
+  //         } else {
+  //           console.log("Không tìm thấy thông tin người dùng trong Firestore.");
+  //         }
+  //       } else {
+  //         console.log("Không có người dùng nào đang đăng nhập.");
+  //       }
+  //     } catch (error) {
+  //       console.error("Lỗi khi lấy thông tin người dùng:", error.message);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchUserInfo();
+  // }, []);
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
@@ -37,7 +76,7 @@ const ProfileScreen = ({ navigation }) => {
 
           if (!querySnapshot.empty) {
             const userDoc = querySnapshot.docs[0];
-            setUserInfo(userDoc.data());
+            setUserInfo({ ...userDoc.data(), docId: userDoc.id });
           } else {
             console.log("Không tìm thấy thông tin người dùng trong Firestore.");
           }
@@ -60,17 +99,17 @@ const ProfileScreen = ({ navigation }) => {
       setModalVisible(false); // Close the modal
       navigation.navigate("Login"); // Navigate to Login screen
     } catch (error) {
-      console.error("Lỗi khi đăng xuất:", error.message);
+      console.error("Error while logging out:", error.message);
     }
   };
 
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
-      setPasswordError("Mật khẩu xác nhận không khớp.");
+      setPasswordError("Confirmation password does not match.");
       return;
     }
     if (newPassword.length < 6) {
-      setPasswordError("Mật khẩu mới phải có ít nhất 6 ký tự.");
+      setPasswordError("The new password must have at least 6 characters.");
       return;
     }
 
@@ -78,14 +117,45 @@ const ProfileScreen = ({ navigation }) => {
     if (user) {
       try {
         await updatePassword(user, newPassword); // Update password
-        setNotificationMessage("Mật khẩu của bạn đã được thay đổi."); // Set success message
+        setNotificationMessage("Your password has been changed. "); // Set success message
         setNotificationModalVisible(true); // Show notification modal
         setPasswordModalVisible(false); // Close the change password modal
       } catch (error) {
-        console.error("Lỗi khi thay đổi mật khẩu:", error.message);
-        setNotificationMessage("Đã xảy ra lỗi khi thay đổi mật khẩu."); // Set error message
+        console.error("Error when changing password:", error.message);
+        setNotificationMessage(
+          "An error occurred while changing the password."
+        ); // Set error message
         setNotificationModalVisible(true); // Show notification modal
       }
+    }
+  };
+
+  const handleEditInfo = async () => {
+    if (!name || !birthDay || !address || !phoneNumber) {
+      setNotificationMessage("Please fill in all information.");
+      setNotificationModalVisible(true);
+      return;
+    }
+
+    try {
+      const userDocRef = doc(db, "users", userInfo.docId);
+      await updateDoc(userDocRef, { name, birthDay, address, phoneNumber });
+
+      // Update state with new information
+      setUserInfo((prev) => ({
+        ...prev,
+        name,
+        birthDay,
+        address,
+        phoneNumber,
+      }));
+      setEditModalVisible(false);
+      setNotificationMessage("Updated information successfully!");
+    } catch (error) {
+      console.error("Error updating information:", error.message);
+      setNotificationMessage("An error occurred while updating information.");
+    } finally {
+      setNotificationModalVisible(true);
     }
   };
 
@@ -101,12 +171,12 @@ const ProfileScreen = ({ navigation }) => {
     <View style={styles.container}>
       <Image
         style={styles.icon}
-        source={require("../assets/images/icons/profile.png")}
+        source={require("../assets/images/icons/user.png")}
       />
       {userInfo ? (
         <>
           <View style={styles.infoRow}>
-            <Text style={[styles.text, styles.boldText]}>Họ và tên: </Text>
+            <Text style={[styles.text, styles.boldText]}>Full name: </Text>
             <Text style={styles.text}>{userInfo.name}</Text>
           </View>
           <View style={styles.infoRow}>
@@ -114,28 +184,54 @@ const ProfileScreen = ({ navigation }) => {
             <Text style={styles.text}>{userInfo.email}</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={[styles.text, styles.boldText]}>Số điện thoại: </Text>
+            <Text style={[styles.text, styles.boldText]}>Phone number: </Text>
             <Text style={styles.text}>{userInfo.phoneNumber}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={[styles.text, styles.boldText]}>Birthday: </Text>
+            <Text style={styles.text}>{userInfo.birthDay}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={[styles.text, styles.boldText]}>Addrees: </Text>
+            <Text style={styles.text}>{userInfo.address}</Text>
           </View>
         </>
       ) : (
-        <Text style={styles.text}>Không tìm thấy thông tin người dùng.</Text>
+        <Text style={styles.text}>No user information found.</Text>
       )}
+
+      <TouchableOpacity
+        style={styles.btnLogout}
+        onPress={() => {
+          setEditModalVisible(true);
+          setName(userInfo.name);
+          setBirthDay(userInfo.birthDay);
+          setAddress(userInfo.address);
+          setPhoneNumber(userInfo.phoneNumber);
+        }}
+      >
+        <Text style={{ fontWeight: "bold", fontSize: 20, color: "white" }}>
+          Update information
+        </Text>
+      </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.btnLogout}
         onPress={() => setPasswordModalVisible(true)} // Show change password modal
       >
-        <Text style={{ fontWeight: "bold", fontSize: 20, color:'white' }}>Đổi mật khẩu</Text>
+        <Text style={{ fontWeight: "bold", fontSize: 20, color: "white" }}>
+          Change password
+        </Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={styles.btnLogout}
+        style={styles.btnLogout2}
         onPress={() => setModalVisible(true)} // Show logout modal
       >
-        <Text style={{ fontWeight: "bold", fontSize: 20, color:'white' }}>Log out</Text>
+        <Text style={{ fontWeight: "bold", fontSize: 20, color: "white" }}>
+          Log out
+        </Text>
       </TouchableOpacity>
-
       {/* Logout Confirmation Modal */}
       <Modal
         visible={modalVisible}
@@ -146,20 +242,20 @@ const ProfileScreen = ({ navigation }) => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <Text style={styles.modalText}>
-              Bạn có chắc chắn muốn đăng xuất?
+              Are you sure you want to sign out?
             </Text>
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setModalVisible(false)} // Close modal
               >
-                <Text style={styles.modalButtonText}>Hủy</Text>
+                <Text style={styles.modalButtonText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, styles.confirmButton]}
                 onPress={handleLogout} // Logout action
               >
-                <Text style={styles.modalButtonText}>Đồng ý</Text>
+                <Text style={styles.modalButtonText}>Sign out</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -175,18 +271,18 @@ const ProfileScreen = ({ navigation }) => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            <Text style={styles.modalText}>Đổi mật khẩu của bạn</Text>
+            <Text style={styles.modalText}>Change your password</Text>
 
             <TextInput
               style={styles.input}
-              placeholder="Mật khẩu mới"
+              placeholder="New password"
               secureTextEntry
               value={newPassword}
               onChangeText={setNewPassword}
             />
             <TextInput
               style={styles.input}
-              placeholder="Xác nhận mật khẩu mới"
+              placeholder="Confirm new password"
               secureTextEntry
               value={confirmPassword}
               onChangeText={setConfirmPassword}
@@ -199,13 +295,66 @@ const ProfileScreen = ({ navigation }) => {
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setPasswordModalVisible(false)} // Close modal
               >
-                <Text style={styles.modalButtonText}>Hủy</Text>
+                <Text style={styles.modalButtonText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, styles.confirmButton]}
                 onPress={handleChangePassword} // Change password action
               >
-                <Text style={styles.modalButtonText}>Đồng ý</Text>
+                <Text style={styles.modalButtonText}>OK</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Edit Info Modal */}
+      <Modal
+        visible={editModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalText}>Update information</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Full name"
+              value={name}
+              onChangeText={setName}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Birthday"
+              value={birthDay}
+              onChangeText={setBirthDay}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Address"
+              value={address}
+              onChangeText={setAddress}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Phone number"
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+              keyboardType="phone-pad"
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setEditModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.confirmButton]}
+                onPress={handleEditInfo}
+              >
+                <Text style={styles.modalButtonText}>Save</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -226,7 +375,7 @@ const ProfileScreen = ({ navigation }) => {
               style={[styles.modalButton, styles.confirmButton]}
               onPress={() => setNotificationModalVisible(false)} // Close modal
             >
-              <Text style={styles.modalButtonText}>Đồng ý</Text>
+              <Text style={styles.modalButtonText}>OK</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -294,7 +443,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
-    backgroundColor:'lightgray'
+    backgroundColor: "lightgray",
   },
   icon: {
     width: 200,
@@ -310,8 +459,8 @@ const styles = StyleSheet.create({
     padding: 15,
     backgroundColor: "#00BCD4",
     borderRadius: 10,
-    height:30,
-    alignItems:'center',
+    height: 30,
+    alignItems: "center",
     justifyContent: "center",
   },
   modalOverlay: {
@@ -393,7 +542,7 @@ const styles = StyleSheet.create({
     width: "100%",
     position: "absolute",
     bottom: 0, // Đảm bảo bottomNav nằm ở dưới cùng
-    backgroundColor:'white'
+    backgroundColor: "white",
   },
   navItem: {
     alignItems: "center",
@@ -409,6 +558,18 @@ const styles = StyleSheet.create({
   navTextActive: {
     color: "#00BCD4",
     fontWeight: "bold",
+  },
+  btnLogout2: {
+    //marginTop: 20,
+    padding: 15,
+    backgroundColor: "#00BCD4",
+    borderRadius: 10,
+    height: 50,
+    width: 180,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 120,
+    marginBottom:100
   },
 });
 

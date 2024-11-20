@@ -767,7 +767,7 @@ export default function SearchHomeScreen({
     (item) =>
       (selectedLocations.length === 0 ||
         selectedLocations.includes(item.type)) &&
-      (!filterByTaxInclusive || item.taxInclusive === false) // Lọc theo trường Tax-inclusive
+      (!filterByTaxInclusive || item.taxInclusive === true) // Lọc theo trường Tax-inclusive
   );
   const filteredDataWithSearch = (() => {
     return filteredData.filter((item) =>
