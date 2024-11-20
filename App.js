@@ -193,6 +193,7 @@ import BookingLocationDetailScreen from "./screens/BookingLocationDetailScreeen"
 import Login from "./screens/Login";
 import Register from "./screens/Register";
 import Profile from "./screens/ProfileScreen";
+import InboxHomeScreen from "./screens/InboxHomeScreen";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 
@@ -350,6 +351,8 @@ export default function App() {
             />
           )}
         </Stack.Screen>
+        <Stack.Screen name="Inbox Home Screen" component={InboxHomeScreen} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );
